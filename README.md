@@ -1,4 +1,4 @@
-D:\Projek\Pauliku<div align="center">
+<div align="center">
 
 <img src="docs/icon.svg" width="88" alt="PauliKu">
 
@@ -20,6 +20,7 @@ Soalnya sepele — dua angka acak. Yang mahal adalah menghitung hasilnya, dan it
 
 - [Tentang tes Pauli](#tentang-tes-pauli)
 - [Apa yang dikerjakan aplikasi ini](#apa-yang-dikerjakan-aplikasi-ini)
+- [Tampilan](#tampilan)
 - [Prinsip \& batasan](#prinsip--batasan)
 - [Mekanik soal — deret berantai](#mekanik-soal--deret-berantai)
 - [Timer \& aba-aba garis](#timer--aba-aba-garis)
@@ -59,6 +60,20 @@ Kerabat dekatnya adalah **tes Kraepelin**: susunannya kolom dan dijumlahkan dari
 - Begitu selesai, seluruh perhitungan yang di kertas makan waktu belasan menit langsung selesai: jumlah per segmen, puncak, lembah, simpangan, tren.
 - Hasilnya jadi kartu PNG yang tinggal dibagikan.
 - Riwayat tersimpan lokal supaya perkembangan antar sesi kelihatan.
+
+## Tampilan
+
+Mockup, belum kode. Tema kertas dengan aksen hijau pine, angka monospace supaya tidak bergoyang saat berganti soal.
+
+| Beranda | Pengaturan sesi | Layar tes | Hasil |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screens/beranda.png" width="185" alt="Beranda"> | <img src="docs/screens/pengaturan.png" width="185" alt="Pengaturan sesi"> | <img src="docs/screens/layar-tes.png" width="185" alt="Layar tes"> | <img src="docs/screens/hasil.png" width="185" alt="Hasil"> |
+
+Kartu yang dibagikan setelah selesai &mdash; dirender 1080 &times; 1350, tema gelap supaya menonjol di WhatsApp:
+
+<img src="docs/screens/kartu-hasil.png" width="400" alt="Kartu hasil">
+
+Semua angka di gambar adalah contoh, bukan data nyata.
 
 ## Prinsip & batasan
 
@@ -128,12 +143,15 @@ Aturan pembangkit:
 
 Aba-aba "garis" bukan jeda. Ia hanya menancapkan penanda, dan penanda itulah yang jadi titik-titik kurva.
 
+**Garis jatuh tiap menit, selalu.** Satu menit sama dengan satu titik kurva, jadi jumlah titik selalu sama dengan durasi dalam menit: sesi 10 menit menghasilkan 10 titik, sesi 60 menit menghasilkan 60 titik. Intervalnya tidak bisa diatur &mdash; satu pengaturan lebih sedikit untuk dipikirkan, dan sumbu mendatar kurvanya langsung terbaca sebagai menit tanpa perlu dikonversi.
+
 | Pengaturan | Pilihan | Bawaan |
 |---|---|---|
 | Durasi | 5 / 10 / 20 / 30 / 60 menit | 10 menit |
-| Interval garis | 30 detik / 1 / 2 / 3 menit | 3 menit |
+| Interval garis | tetap 1 menit | &mdash; |
 
-Sesi penuh 60 menit dengan garis tiap 3 menit menghasilkan **20 titik kurva**; sesi latihan 10 menit dengan garis tiap 1 menit menghasilkan 10 titik.
+> [!NOTE]
+> Ini menyimpang dari Pauli di kertas, yang aba-abanya jatuh tiap 3 menit. Konsekuensinya: pada simulasi 60 menit, aba-aba berbunyi 60 kali, bukan 20. Kalau nanti mode simulasi ingin terasa persis seperti tes aslinya, pisahkan kedua hal itu &mdash; bunyi aba-aba tiap 3 menit, tapi titik kurva tetap direkam tiap menit.
 
 > [!WARNING]
 > Hitung waktu dari `Stopwatch` atau selisih `DateTime`, **jangan** menumpuk hitungan dari `Timer.periodic`. Tiap tick meleset beberapa milidetik; dalam 60 menit akumulasinya bisa puluhan detik dan seluruh pembagian segmen jadi berantakan. `Timer.periodic` tetap dipakai, tapi hanya untuk memicu pengecekan — angka waktunya selalu dibaca dari stopwatch.
@@ -152,7 +170,7 @@ Satu aturan mengalahkan semua pertimbangan desain lain di layar ini: **jangan ha
 
 ```
 ┌─────────────────────────┐
-│ MENIT 12 / 60  SEGMEN 4 │
+│ MENIT 12 / 60           │
 │ ▓▓▓▓░░░░░░░░░░░░░░░░░░░ │
 │                         │
 │            7            │
@@ -172,6 +190,7 @@ Satu aturan mengalahkan semua pertimbangan desain lain di layar ini: **jangan ha
 - **Tombol minimal 56 dp.** Di kecepatan satu ketukan per detik, tombol kecil menghasilkan salah tekan yang terbaca sebagai "tidak teliti" padahal cuma masalah tata letak.
 - **Numpad di zona jempol**, tombol hapus dipisah dari deretan angka.
 - **Tombol kembali dikunci** dengan `PopScope` + dialog konfirmasi. Keluar tak sengaja di menit ke-50 itu menyakitkan.
+- **Tidak ada penghitung segmen.** Karena satu segmen sama dengan satu menit, label menit sudah menyatakannya &mdash; dua angka yang berarti sama hanya menambah beban baca.
 - **Catat `responseMs` tiap jawaban.** Murah disimpan, dan membuka analisis tempo yang tidak mungkin dilakukan di kertas.
 
 Alur layar:
@@ -206,7 +225,7 @@ Tiap segmen menyimpan empat angka: berapa dijawab, berapa benar, berapa salah, d
 
 **Soal penamaan.** Istilah aslinya — *panker, janker, hanker, tianker* — sengaja tidak dipakai sebagai label utama. Definisinya berbeda-beda antar sumber, normanya tidak dipublikasikan resmi, dan salah satunya berbunyi buruk di telinga orang Indonesia. Pakai bahasa yang jelas di antarmuka; istilah aslinya boleh muncul sebagai keterangan kecil di layar penjelasan.
 
-**Kurvanya.** Sumbu mendatar waktu, sumbu tegak jumlah benar per segmen. Garis rata-rata jadi acuan diam; puncak dan lembah diberi label langsung. Cukup satu deret data, jadi tidak perlu legenda.
+**Kurvanya.** Sumbu mendatar menit, sumbu tegak jumlah benar per menit. Garis rata-rata jadi acuan diam; puncak dan lembah diberi label langsung. Cukup satu deret data, jadi tidak perlu legenda.
 
 ## Model data
 
@@ -215,7 +234,8 @@ class PauliSession {
   final String   id;
   final DateTime startedAt;
   final int      durationSec;    // 600, 3600, ...
-  final int      intervalSec;    // 180 = garis tiap 3 menit
+  final int      intervalSec;    // selalu 60; disimpan supaya sesi lama
+                                 // tetap terbaca kalau aturannya berubah
   final int      seed;           // supaya deret bisa dibangkitkan ulang
   final bool     interrupted;    // sempat masuk latar belakang
   final int      totalAnswered;
@@ -371,6 +391,8 @@ Ikon terpilih: **Rantai** (`docs/icon.svg`). Dua busur berbagi satu titik di ten
 | Krem | `#F0EDE3` | latar terang, teks di atas hijau |
 
 Angka di seluruh aplikasi memakai typeface monospace supaya lebarnya tetap dan tidak "bergoyang" saat berganti soal.
+
+Mockup kedelapan layar ada di `docs/screens/` (empat di antaranya dipasang di bagian [Tampilan](#tampilan)).
 
 **Berikutnya untuk ikon:** dari `docs/icon.svg` perlu diturunkan Android adaptive icon (foreground dan background terpisah, area aman 66 dp dari 108 dp) dan set app icon iOS.
 
