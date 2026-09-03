@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="512" height="512" role="img" aria-label="Ikon PauliKu: tiga titik dengan dua busur penghubung, titik tengah disorot karena dipakai dua kali">
+  <rect width="120" height="120" rx="27" fill="#101A18"/>
+  <path d="M24,58 Q42,100 60,58" fill="none" stroke="#4ECFA8" stroke-width="7" stroke-linecap="round"/>
+  <path d="M60,58 Q78,100 96,58" fill="none" stroke="#4ECFA8" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="24" cy="50" r="6.5" fill="#F0EDE3"/>
+  <circle cx="96" cy="50" r="6.5" fill="#F0EDE3"/>
+  <circle cx="60" cy="50" r="13" fill="#101A18"/>
+  <circle cx="60" cy="50" r="10" fill="#E9A13B"/>
+</svg>
