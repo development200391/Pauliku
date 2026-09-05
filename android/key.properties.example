@@ -1,0 +1,7 @@
+# Salin jadi android/key.properties lalu isi nilainya.
+# Berkas asli TIDAK ikut ke repo (lihat .gitignore) — simpan salinannya
+# beserta berkas .jks-nya di pengelola kata sandi.
+storePassword=
+keyPassword=
+keyAlias=upload
+storeFile=C:/Users/<namamu>/pauliku-upload.jks

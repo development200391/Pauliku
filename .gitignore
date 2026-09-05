@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Penandatanganan rilis — JANGAN pernah masuk repo.
+# Kunci yang bocor tidak bisa dicabut, hanya bisa diganti lewat pemulihan Google.
+android/key.properties
+**/*.jks
+**/*.keystore

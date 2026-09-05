@@ -360,6 +360,19 @@ flutter run
 > [!NOTE]
 > `--delete-conflicting-outputs` sudah tidak berlaku di `build_runner` 2.15 ke atas — flagnya diterima tapi diabaikan dengan peringatan.
 
+**Yang dibutuhkan untuk membangun ke Android:**
+
+| Komponen | Versi | Kenapa |
+|---|---|---|
+| JDK | 21 | Gradle 9.1 + AGP 9.0 |
+| Platform + build-tools | android-36 / 36.0.0 | `compileSdk` bawaan Flutter 3.44 |
+| **NDK** | 28.2.13676358 | wajib, lihat catatan di bawah |
+
+> [!WARNING]
+> **NDK bukan opsional di proyek ini.** Sejak `sqlite3` 3.x, SQLite tidak lagi dikirim sebagai pustaka siap pakai melainkan **dikompilasi dari sumber C** lewat build hook `native_toolchain_c` — termasuk untuk Android. Native assets sendiri sudah aktif secara bawaan di channel stable, jadi tanpa NDK terpasang, `flutter build apk` gagal. Ini mudah terlewat karena tidak ada satu pun baris C di repo ini.
+
+Terverifikasi jalan di emulator **Android 16 (API 36), x86_64**: sesi berjalan penuh sampai selesai, hasilnya tersimpan ke `app_flutter/pauliku.sqlite`, dan tombol bagikan menghasilkan PNG 1080 × 1350 yang diterima lembar berbagi Android.
+
 Seluruh berkas uji jalan tanpa emulator, termasuk yang menjalankan sesi 60 menit dan yang merender kartu PNG:
 
 ```bash
