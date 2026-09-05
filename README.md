@@ -13,7 +13,7 @@ Soalnya sepele — dua angka acak. Yang mahal adalah menghitung hasilnya, dan it
 
 ---
 
-> **Status:** rancangan selesai, kode belum dimulai (pra-v0.1).
+> **Status:** v0.3 — aplikasinya jalan penuh: pembangkit deret, layar tes, skoring, kurva, kartu PNG, dan riwayat sudah ada. Sisa menuju v1.0 ada di [Roadmap](#roadmap).
 > Dokumen ini adalah acuan tunggal selama pengerjaan. Kalau ada keputusan baru, ubah di sini dulu.
 
 ## Daftar isi
@@ -56,14 +56,14 @@ Kerabat dekatnya adalah **tes Kraepelin**: susunannya kolom dan dijumlahkan dari
 
 - Soal dibangkitkan acak di HP — tidak ada bank soal, tidak perlu jaringan.
 - Satu pasang angka per layar dengan numpad 0–9. Satu ketukan per soal.
-- Durasi dan interval aba-aba garis bisa diatur, dari latihan 5 menit sampai simulasi penuh 60 menit.
+- Durasi bisa dipilih, dari latihan 5 menit sampai simulasi penuh 60 menit. Aba-aba garis tetap tiap menit.
 - Begitu selesai, seluruh perhitungan yang di kertas makan waktu belasan menit langsung selesai: jumlah per segmen, puncak, lembah, simpangan, tren.
 - Hasilnya jadi kartu PNG yang tinggal dibagikan.
 - Riwayat tersimpan lokal supaya perkembangan antar sesi kelihatan.
 
 ## Tampilan
 
-Mockup, belum kode. Tema kertas dengan aksen hijau pine, angka monospace supaya tidak bergoyang saat berganti soal.
+Mockup rancangan; aplikasinya sekarang mengikuti tata letak ini. Tema kertas dengan aksen hijau pine, angka monospace supaya tidak bergoyang saat berganti soal.
 
 | Beranda | Pengaturan sesi | Layar tes | Hasil |
 |:---:|:---:|:---:|:---:|
@@ -188,7 +188,7 @@ Satu aturan mengalahkan semua pertimbangan desain lain di layar ini: **jangan ha
 - **Tanpa tombol kirim.** Tekan angka = tercatat dan langsung lanjut.
 - **Tanpa umpan balik benar/salah selama tes.** Tanda centang atau silang memecah konsentrasi, dan tes aslinya juga tidak memberi tahu. Semua penilaian ditahan sampai layar hasil.
 - **Tombol minimal 56 dp.** Di kecepatan satu ketukan per detik, tombol kecil menghasilkan salah tekan yang terbaca sebagai "tidak teliti" padahal cuma masalah tata letak.
-- **Numpad di zona jempol**, tombol hapus dipisah dari deretan angka.
+- **Numpad di zona jempol**, tombol hapus dipisah dari deretan angka. Karena tidak ada tombol kirim, hapus berarti *menarik kembali jawaban terakhir*: soalnya kembali persis seperti semula untuk dijawab ulang, dan hitungan pembetulan naik satu.
 - **Tombol kembali dikunci** dengan `PopScope` + dialog konfirmasi. Keluar tak sengaja di menit ke-50 itu menyakitkan.
 - **Tidak ada penghitung segmen.** Karena satu segmen sama dengan satu menit, label menit sudah menyatakannya &mdash; dua angka yang berarti sama hanya menambah beban baca.
 - **Catat `responseMs` tiap jawaban.** Murah disimpan, dan membuka analisis tempo yang tidak mungkin dilakukan di kertas.
@@ -227,6 +227,8 @@ Tiap segmen menyimpan empat angka: berapa dijawab, berapa benar, berapa salah, d
 
 **Kurvanya.** Sumbu mendatar menit, sumbu tegak jumlah benar per menit. Garis rata-rata jadi acuan diam; puncak dan lembah diberi label langsung. Cukup satu deret data, jadi tidak perlu legenda.
 
+**Grafik tren antar sesi memakai satuan yang berbeda:** rata-rata benar *per menit*, bukan jumlah kerja mentah. Jumlah mentah sesi 60 menit selalu enam kali lipat sesi 10 menit, jadi grafik yang memakainya cuma akan menggambarkan pilihan durasi dan bukan perkembangan.
+
 ## Model data
 
 ```dart
@@ -255,7 +257,8 @@ class PauliSegment {
 
 // Opsional — hanya kalau "simpan detail" diaktifkan
 class PauliAnswer {
-  final int sessionRowId;
+  final String sessionId;      // id sesi di atas, bukan rowid bawaan SQLite:
+                               // sesi sudah punya id sebelum sempat disimpan
   final int elapsedMs;
   final int a, b;              // angka atas & bawah
   final int expected, given;
@@ -274,17 +277,20 @@ lib/
   app.dart
   core/
     theme.dart              warna, tipografi, ukuran tombol
-    formatters.dart
+    formatters.dart         tanggal & desimal Indonesia, tanpa intl
+    brand_mark.dart         ikon aplikasi sebagai CustomPainter
   domain/                   <- Dart murni, TANPA impor Flutter
     pauli_engine.dart       pembangkit deret berantai + seed
     scoring.dart            semua rumus di bagian Skoring
     models.dart
   data/
-    db/                     drift: tabel, dao, migrasi
+    db/database.dart        drift: tabel + migrasi (.g.dart hasil generasi)
     session_repository.dart
+    providers.dart          riverpod: basis data, riwayat, pengaturan
   features/
     home/
-    setup/                  durasi, interval, suara, angka nol
+    setup/                  durasi, suara, getar, angka nol, simpan detail
+    about/                  penjelasan tes, deret berantai, arti tiap metrik
     test/
       test_screen.dart
       test_controller.dart  stopwatch, segmen, aba-aba garis
@@ -293,6 +299,8 @@ lib/
     result/
       result_screen.dart
       result_card.dart      widget yang dirender jadi PNG
+      work_curve.dart       kurva kerja, dipakai ulang di kartu & beranda
+      segment_detail_screen.dart
     history/
       history_screen.dart
       trend_chart.dart
@@ -300,6 +308,9 @@ lib/
 test/
   pauli_engine_test.dart
   scoring_test.dart         <- yang paling penting
+  test_controller_test.dart
+  session_repository_test.dart
+  widget_smoke_test.dart
 ```
 
 Satu batas dijaga ketat: **`domain/` tidak boleh mengimpor Flutter.** Kalau bersih, seluruh rumus skoring bisa diuji dengan `flutter test` dalam hitungan detik tanpa emulator. Kalau tercampur widget, satu-satunya cara memastikan hitungannya benar adalah mengerjakan tes 60 menit dengan tangan — dan itu tidak akan dilakukan berulang kali.
@@ -311,11 +322,20 @@ Versi dicek di pub.dev pada 1 September 2026.
 | Paket | Versi | Untuk apa |
 |---|---|---|
 | `flutter_riverpod` | ^2.6 | state management; ringan dan enak diuji |
-| `drift` + `sqlite3_flutter_libs` | ^2.34 | riwayat lokal, query tren antar sesi |
+| `drift` + `drift_flutter` | ^2.34 | riwayat lokal, query tren antar sesi |
 | `fl_chart` | ^1.2 | kurva kerja dan grafik tren |
 | `share_plus` | ^13.3 | membagikan PNG hasil |
 | `path_provider` | ^2.1 | lokasi file sementara untuk PNG |
-| `wakelock_plus` | ^1.7 | layar tetap menyala selama tes |
+| `wakelock_plus` | ^1.8 | layar tetap menyala selama tes |
+| `clock` | ^1.1 | sumber waktu yang bisa dipalsukan saat diuji |
+
+Di sisi `dev_dependencies`: `drift_dev` + `build_runner` untuk kode generasi drift, dan `fake_async` untuk menjalankan sesi 60 menit di dalam tes.
+
+> [!WARNING]
+> **`sqlite3_flutter_libs` sudah tidak diperlukan.** Sejak `sqlite3` versi 3.x, paket itu ditandai usang dan versi 0.6.0 sudah dikosongkan isinya. Yang dipakai sekarang `drift_flutter`, yang sekaligus menyediakan `driftDatabase(name: ...)` untuk membuka basis data tanpa kode khusus tiap platform.
+
+> [!NOTE]
+> **Stopwatch diambil dari `package:clock`, bukan `Stopwatch()` langsung.** Perilakunya identik di aplikasi, tapi di dalam `fakeAsync` stopwatch itu ikut maju bersama waktu palsu — sehingga sesi 60 menit penuh bisa diuji dalam hitungan milidetik. Tanpa itu, satu-satunya cara memastikan pembagian segmennya benar adalah duduk mengerjakan tes 60 menit.
 
 > [!WARNING]
 > **API `share_plus` sudah berubah.** Banyak tutorial masih memakai `Share.shareXFiles(...)` yang kini usang. Yang berlaku sejak versi 11 ke atas:
@@ -333,15 +353,27 @@ Kalau nanti terasa berat, `drift` bisa diganti `sqflite` atau `hive_ce`. Drift d
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # untuk drift
+dart run build_runner build   # untuk drift; hasilnya lib/data/db/database.g.dart
 flutter run
 ```
 
-Uji rumus skoring tanpa emulator:
+> [!NOTE]
+> `--delete-conflicting-outputs` sudah tidak berlaku di `build_runner` 2.15 ke atas — flagnya diterima tapi diabaikan dengan peringatan.
+
+Seluruh berkas uji jalan tanpa emulator, termasuk yang menjalankan sesi 60 menit dan yang merender kartu PNG:
 
 ```bash
+flutter test                       # 66 tes, beberapa detik
 flutter test test/scoring_test.dart
 ```
+
+| Berkas uji | Yang dijaga |
+|---|---|
+| `pauli_engine_test.dart` | rantai deret, rentang digit, jawaban, keterulangan seed |
+| `scoring_test.dart` | pembagian segmen dan seluruh rumus di bagian Skoring |
+| `test_controller_test.dart` | stopwatch, batas menit, aba-aba, jeda, undo — di dalam waktu palsu |
+| `session_repository_test.dart` | simpan-baca sesi, cascade delete, pengaturan (SQLite di memori) |
+| `widget_smoke_test.dart` | tiap layar terpasang tanpa luber; kartu benar-benar 1080 × 1350 |
 
 ## Kartu hasil
 
@@ -367,14 +399,14 @@ await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
 
 Urutannya dipilih supaya aplikasinya berguna untuk dipakai sendiri sedini mungkin.
 
-- [ ] **v0.1 — Bisa dipakai sendiri**
-      Pembangkit deret, layar tes, stopwatch dan segmen, hasil dalam angka mentah. Belum ada grafik, belum ada penyimpanan.
-- [ ] **v0.2 — Kurva dan berbagi**
+- [x] **v0.1 — Bisa dipakai sendiri**
+      Pembangkit deret, layar tes, stopwatch dan segmen, hasil dalam angka mentah.
+- [x] **v0.2 — Kurva dan berbagi**
       `fl_chart`, semua metrik, kartu hasil PNG, tombol bagikan. Di titik ini nilai jual sebenarnya sudah ada.
-- [ ] **v0.3 — Riwayat dan tren**
+- [x] **v0.3 — Riwayat dan tren**
       Penyimpanan drift, daftar sesi, grafik perkembangan antar sesi. Sesi `interrupted` dikecualikan dari tren.
 - [ ] **v1.0 — Siap rilis**
-      Pengaturan lengkap, onboarding singkat yang menjelaskan deret berantai, halaman penjelasan metrik, ikon dan tangkapan layar Play Store.
+      Pengaturan sudah lengkap dan halaman penjelasan metrik sudah ada. Sisanya: onboarding singkat saat pertama membuka, set ikon iOS, tangkapan layar Play Store, dan halaman kebijakan privasi.
 - [ ] **Nanti**
       Mode Kraepelin (kolom, dijumlah dari bawah ke atas), mode kolom mirip kertas untuk layar besar, pengingat latihan harian, ekspor PDF.
 
@@ -394,7 +426,9 @@ Angka di seluruh aplikasi memakai typeface monospace supaya lebarnya tetap dan t
 
 Mockup kedelapan layar ada di `docs/screens/` (empat di antaranya dipasang di bagian [Tampilan](#tampilan)).
 
-**Berikutnya untuk ikon:** dari `docs/icon.svg` perlu diturunkan Android adaptive icon (foreground dan background terpisah, area aman 66 dp dari 108 dp) dan set app icon iOS.
+**Ikon Android sudah diturunkan** dari `docs/icon.svg` sebagai *vector drawable*, bukan PNG: `ic_launcher_foreground.xml` (busur dan titik, diperkecil 0,776 supaya berhenti di batas area aman 66 dp dari 108 dp), warna latar terpisah, plus versi `monochrome` untuk ikon bertema Android 13+ — versi itu membuang cincin pemisah di tengah, yang kalau ikut digambar malah menutup celah antar busur dan membuat marknya jadi gumpalan.
+
+**Berikutnya untuk ikon:** set app icon iOS (butuh PNG beberapa ukuran) dan PNG cadangan `mipmap-*` untuk Android di bawah API 26, yang sampai sekarang masih memakai bawaan Flutter.
 
 ## Rilis
 

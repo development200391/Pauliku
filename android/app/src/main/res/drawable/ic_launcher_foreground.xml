@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Latar depan ikon adaptif, diturunkan dari docs/icon.svg.
+
+  Kanvasnya 108dp; yang dijamin selalu terlihat cuma lingkaran aman 66dp di
+  tengah. Gambar aslinya digambar di ruang 120x120 dengan isi sebenarnya
+  membentang x 17,5..102,5 dan y 43,5..79 — jadi seluruh kelompoknya diperkecil
+  0,776 lalu digeser supaya titik tengah isi jatuh tepat di tengah kanvas dan
+  lebarnya berhenti di batas area aman.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:scaleX="0.776"
+        android:scaleY="0.776"
+        android:translateX="7.44"
+        android:translateY="6.47">
+
+        <!-- Dua busur yang berbagi satu titik di tengah. -->
+        <path
+            android:pathData="M24,58 Q42,100 60,58"
+            android:strokeColor="#4ECFA8"
+            android:strokeWidth="7"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M60,58 Q78,100 96,58"
+            android:strokeColor="#4ECFA8"
+            android:strokeWidth="7"
+            android:strokeLineCap="round" />
+
+        <!-- Angka di kedua ujung deret. -->
+        <path
+            android:pathData="M17.5,50 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0"
+            android:fillColor="#F0EDE3" />
+        <path
+            android:pathData="M89.5,50 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0"
+            android:fillColor="#F0EDE3" />
+
+        <!-- Cincin gelap memisahkan titik tengah dari busur di belakangnya. -->
+        <path
+            android:pathData="M47,50 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0"
+            android:fillColor="#101A18" />
+        <!-- Angka yang dipakai dua kali. -->
+        <path
+            android:pathData="M50,50 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"
+            android:fillColor="#E9A13B" />
+    </group>
+</vector>

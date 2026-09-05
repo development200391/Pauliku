@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Layar pembuka memakai krem yang sama dengan latar aplikasi, supaya tidak
+     ada kedipan putih sebelum bingkai pertama Flutter tergambar. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/launch_background" />
+</layer-list>

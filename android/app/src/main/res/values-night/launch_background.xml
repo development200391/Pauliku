@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- "Latar gelap" — dipakai saat mode gelap sistem menyala. -->
+    <color name="launch_background">#101A18</color>
+</resources>
